@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import zoro from '../assets/zoro2.jpg'
 import katanalgas from '../assets/katanalgas.png'
 import { firApp } from '../config/firebase'
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider , signInWithPopup } from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider , signInWithRedirect } from 'firebase/auth'
 import Swal from 'sweetalert2'
 
 const auth = getAuth(firApp);
@@ -43,7 +43,7 @@ const Formulario = () => {
     }
 
     const handleGoogleLogin = () => {
-        signInWithPopup(auth, provider)
+        signInWithRedirect(auth, provider)
             .then((result) => {
                 // This gives you a Google Access Token. You can use it to access the Google API.
                 const credential = GoogleAuthProvider.credentialFromResult(result);
