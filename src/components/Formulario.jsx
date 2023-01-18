@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import zoro from '../assets/zoro2.jpg'
 import katanalgas from '../assets/katanalgas.png'
 import { firApp } from '../config/firebase'
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider , signInWithRedirect } from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import Swal from 'sweetalert2'
 
 const auth = getAuth(firApp);
@@ -15,6 +15,8 @@ const Formulario = () => {
 
     const handleClick = (e) => {
         e.preventDefault();
+
+        console.log(Email)
 
         if (estaRegistrando) {
             createUserWithEmailAndPassword(auth, Email, Password).then((user) => {
@@ -31,19 +33,83 @@ const Formulario = () => {
                 setEstaRegistrando(!estaRegistrando)
             }).catch((error) => {
                 console.log(error.code)
+
+                switch (error.code) {
+                    case 'auth/weak-password':
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Password entered is too insecure, type at least 6 characters',
+                            color: 'danger',
+                            showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 1800,
+                            timerProgressBar: true,
+                        })
+                        break;
+                
+                    case 'auth/email-already-in-use':
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'The entered Email is already in use',
+                            color: 'danger',
+                            showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 1800,
+                            timerProgressBar: true,
+                        })
+                    break;
+                }
+
             })
         } else {
             signInWithEmailAndPassword(auth, Email, Password).then((user) => {
                 console.log(user.user)
             }).catch((error) => {
                 console.log(error.code)
+
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'The mail entered does not exist in the database',
+                            icon: 'error',
+                            color: 'danger',
+                            showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 2000
+                        })
+                        break;
+
+                    case 'auth/wrong-password':
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'The Password entered is incorrect',
+                            color: 'danger',
+                            showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 1800,
+                            timerProgressBar: true,
+                        })
+                        break;
+                    case 'auth/too-many-requests':
+                        Swal.fire({
+                            title: 'Too many requests!',
+                            text: 'Too many requests , Please try again in a few seconds',
+                            color: 'danger',
+                            showCancelButton: false,
+                            showConfirmButton: false,
+                            timer: 1800,
+                            timerProgressBar: true,
+                        })
+                    break;
+                }
             })
 
         }
     }
 
     const handleGoogleLogin = () => {
-        signInWithRedirect(auth, provider)
+        signInWithPopup(auth, provider)
             .then((result) => {
                 // This gives you a Google Access Token. You can use it to access the Google API.
                 const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -52,6 +118,13 @@ const Formulario = () => {
                 const user = result.user;
 
                 console.log(user)
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Congratulations',
+                    text: 'Logged In Successfully!',
+                    footer: `Welcome ${user.displayName}`
+
+                })
                 // ...
             }).catch((error) => {
                 // Handle Errors here.
@@ -62,7 +135,7 @@ const Formulario = () => {
                 // The AuthCredential type that was used.
                 const credential = GoogleAuthProvider.credentialFromError(error);
 
-                console.log(errorCode , errorMessage, email , credential)
+                console.log(errorCode, errorMessage, email, credential)
                 // ...
             });
     }
